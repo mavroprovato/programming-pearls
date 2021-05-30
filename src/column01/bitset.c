@@ -8,21 +8,10 @@
 #include <string.h>
 #include <limits.h>
 
-// The base unit that holds the bitset data
-typedef uint32_t BS_UNIT;
+#include "bitset.h"
 
 #define BS_UNIT_POS(n) ((n) / (sizeof(BS_UNIT) * CHAR_BIT))
 #define BS_BIT_POS(n) ((n) % (sizeof(BS_UNIT) * CHAR_BIT))
-
-/**
- * The bit set structure
- */
-typedef struct {
-    /** The storage. */
-    BS_UNIT *bits;
-    /** The number of bits that the set holds. */
-    size_t n;
-} BitSet;
 
 /**
 * Initialize the bit set.

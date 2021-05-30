@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 // The maximum number of elements that the program can handle.
-#define MAX_VALUE 1000000
+#define MAX_ELEMENTS 1000000
 
 /**
  * Comparison function for sorting an array of u_int32_t elements.
@@ -41,7 +41,7 @@ int main() {
     char *end_ptr = NULL;
     size_t current_index = 0;
     int exit_status = EXIT_SUCCESS; // The exit status.
-    u_int32_t input[MAX_VALUE] = {0};
+    u_int32_t input[MAX_ELEMENTS] = {0};
 
     // Read the input line by line
     while (getline(&line, &len, stdin) != -1) {
