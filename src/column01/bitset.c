@@ -3,7 +3,6 @@
  * bits. It provides functions to set, unset and toggle bits in the data structure.
  */
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
