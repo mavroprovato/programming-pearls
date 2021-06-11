@@ -13,7 +13,7 @@
 // The maximum number of elements that the program can handle.
 #define MAX_ELEMENTS 1000000
 // The maximum value that an element can have.
-#define MAX_VALUE 10000000
+#define MAX_VALUE (10000000 - 1)
 
 /**
  * The main entry point of the program.
