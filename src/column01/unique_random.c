@@ -1,6 +1,9 @@
 /**
  * This program is a solution for problem 4. It generates k unique random integers between 0 and n-1. The implementation
  * uses the Fisher–Yates shuffle to preform this task.
+ *
+ * Note that the standard library function rand() is used, seeded with srand(time(NULL)), so the random numbers
+ * generated are predictable. So, this program should not be used if security is a concern.
  */
 #include <errno.h>
 #include <stdio.h>
