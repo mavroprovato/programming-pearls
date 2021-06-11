@@ -52,5 +52,6 @@ int main() {
     // Cleanup
     cleanup:
     free(line);
+    bs_destroy(&bs);
     exit(exit_status);
 }
