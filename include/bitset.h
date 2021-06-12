@@ -26,12 +26,22 @@ typedef struct {
 * @return true if the data structure was initialized successfully, false otherwise.
 */
 bool bs_init(BitSet *bs, size_t n);
+
 /**
  * Free resources associated with the bit set.
  *
  * @param bs Pointer to the bit set data structure to be freed.
  */
 void bs_destroy(BitSet *bs);
+
+/**
+ * Check if the bit is set in the specified position.
+ *
+ * @param bs Pointer to the bit set data structure.
+ * @param n The position to check.
+ * @return true if the bit is set, false otherwise.
+ */
+bool bs_is_set(BitSet *bs, size_t n);
 
 /**
 * Set a bit at the specified position.
@@ -61,12 +71,11 @@ bool bs_clear(BitSet *bs, size_t n);
 bool bs_toggle(BitSet *bs, size_t n);
 
 /**
- * Check if the bit is set in the specified position.
- *
- * @param bs Pointer to the bit set data structure.
- * @param n The position to check.
- * @return true if the bit is set, false otherwise.
- */
-bool bs_is_set(BitSet *bs, size_t n);
+* Unset all the bits in the set.
+*
+* @param bs Pointer to the bit set data structure.
+* @return true if the bit set was reset successfully, false otherwise.
+*/
+bool bs_reset(BitSet *bs);
 
 #endif //BITSET_H

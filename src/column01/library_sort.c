@@ -1,7 +1,9 @@
 /**
- * This program is a solution for problem 1. It reads a list of positive 32-bit integers from standard input, sorts
- * them, and then writes them to the standard output. Each integer must be in its own line. This version of the program
- * uses the qsort library function in order to perform the sort, so all integers are loaded in memory.
+ * This program reads a list of positive 32-bit integers from standard input, sorts them, and then writes them to the
+ * standard output. Each integer must be in its own line. It uses the qsort library function in order to perform the
+ * sort, so all integers are loaded in memory.
+ *
+ * This is a solution for problem 1.
  */
 
 #include <errno.h>

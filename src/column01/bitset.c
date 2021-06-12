@@ -1,6 +1,8 @@
 /**
- * This library is a solution for problem 2. It implements the bit set data structure, which is used to compactly store
- * bits. It provides functions to set, unset and toggle bits in the data structure.
+ * This library implements a bit set data structure, which is used to compactly store bits. It provides functions to
+ * set, unset, toggle and clear all bits in the data structure.
+ *
+ * Is is a solution for problem 2.
  */
 #include <stdbool.h>
 #include <stdlib.h>
@@ -9,6 +11,7 @@
 
 #include "bitset.h"
 
+#define BS_NUM_BYTES(n) (((n - 1) / (sizeof(BS_UNIT) * CHAR_BIT) + 1) * sizeof(BS_UNIT))
 #define BS_UNIT_POS(n) ((n) / (sizeof(BS_UNIT) * CHAR_BIT))
 #define BS_BIT_POS(n) ((n) % (sizeof(BS_UNIT) * CHAR_BIT))
 
@@ -26,7 +29,7 @@ bool bs_init(BitSet *bs, size_t n) {
     }
 
     // Initialize the storage
-    size_t num_bytes = ((n - 1) / (sizeof(BS_UNIT) * CHAR_BIT) + 1) * sizeof(BS_UNIT);
+    size_t num_bytes = BS_NUM_BYTES(n);
     bs->bits = malloc(num_bytes);
     if (!bs->bits) {
         return false;
@@ -44,6 +47,21 @@ bool bs_init(BitSet *bs, size_t n) {
  */
 void bs_destroy(BitSet *bs) {
     free(bs->bits);
+}
+
+/**
+ * Check if the bit is set in the specified position.
+ *
+ * @param bs Pointer to the bit set data structure.
+ * @param n The position to check.
+ * @return true if the bit is set, false otherwise.
+ */
+bool bs_is_set(BitSet *bs, size_t n) {
+    if (n > bs->n) {
+        return false;
+    }
+
+    return bs->bits[BS_UNIT_POS(n)] & (1ull << BS_BIT_POS(n));
 }
 
 /**
@@ -98,16 +116,11 @@ bool bs_toggle(BitSet *bs, size_t n) {
 }
 
 /**
- * Check if the bit is set in the specified position.
- *
- * @param bs Pointer to the bit set data structure.
- * @param n The position to check.
- * @return true if the bit is set, false otherwise.
- */
-bool bs_is_set(BitSet *bs, size_t n) {
-    if (n > bs->n) {
-        return false;
-    }
-
-    return bs->bits[BS_UNIT_POS(n)] & (1ull << BS_BIT_POS(n));
+* Unset all the bits in the set.
+*
+* @param bs Pointer to the bit set data structure.
+* @return true if the bit set was reset successfully, false otherwise.
+*/
+bool bs_reset(BitSet *bs) {
+    return memset(bs->bits, 0, BS_NUM_BYTES(bs->n));
 }
