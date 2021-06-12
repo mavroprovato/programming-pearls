@@ -15,12 +15,10 @@
 
 #include "bitset.h"
 
-#define MAX_ELEMENTS 1000000
-#define MAX_VALUE 10000000
 // The maximum number of elements that the program can handle.
-static uint32_t max_elements = MAX_ELEMENTS;
+static uint32_t max_elements = UINT32_MAX;
 // The maximum value that an element can have.
-static uint32_t max_value = MAX_VALUE;
+static uint32_t max_value = UINT32_MAX - 1;
 // The number of passes to perform.
 static size_t passes = 1;
 // The help flag
@@ -50,7 +48,6 @@ bool parse_arguments(int argc, char *argv[]) {
     int option_index = 0;
     while (true) {
         c = getopt_long(argc, argv, "hc:m:p:", long_options, &option_index);
-
         if (c == -1) {
             break;
         }
@@ -89,7 +86,7 @@ bool parse_arguments(int argc, char *argv[]) {
         input = argv[optind];
     }
     // Validate the arguments
-    if (max_elements > max_value) {
+    if (max_value >= max_elements) {
         fprintf(stderr, "The maximum number of elements must be less than the maximum value.\n");
         return false;
     }
@@ -108,12 +105,12 @@ void print_usage() {
     printf("Usage: [OPTION]... [FILE]...\n\n"
            "Read a list of positive 32-bit integers from an input file and sorts them.\n\n"
            "Mandatory arguments to long options are mandatory for short options too.\n"
-           "    -c, --count=COUNT       The number of elements to process, default is %u.\n"
-           "    -m, --max-value=VALUE   The maximum value of the elements, default is %u.\n"
+           "    -c, --count=COUNT       The number of elements to process, default is %u inclusive.\n"
+           "    -m, --max-value=VALUE   The maximum value of the elements, default is %u exclusive.\n"
            "    -p, --passes=PASSES     The number of passes to perform for the input, default is 1.\n"
            "                                If the number of passes is more than one, an input file must be provided.\n"
            "    -h, --help              Display this help and exit.\n"
-           "", MAX_ELEMENTS, MAX_VALUE);
+           "", UINT32_MAX, UINT32_MAX);
 }
 
 /**
@@ -137,7 +134,7 @@ int main(int argc, char *argv[]) {
     // Open the input file
     FILE *file = input ? fopen(input, "r") : stdin;
     if (file == NULL) {
-        fprintf(stderr, "Unable to open input file %s\n", input);
+        fprintf(stderr, "Unable to open input file %s.\n", input);
         return EXIT_FAILURE;
     }
 
@@ -159,13 +156,24 @@ int main(int argc, char *argv[]) {
             u_int32_t number = strtoul(line, &end_ptr, 10);
             // Perform error checking
             if (end_ptr == line || errno != 0) {
-                fprintf(stderr, "Could not parse line as an number\n");
+                fprintf(stderr, "Could not parse line as an number.\n");
                 exit_status = EXIT_FAILURE;
                 goto cleanup;
             }
-            // Number read successfully, set the bit
+            if (number >= max_value) {
+                fprintf(stderr, "Input number %d is not less than the maximum value of %d.\n", number, max_value);
+                exit_status = EXIT_FAILURE;
+                goto cleanup;
+            }
+            // Number read successfully
             if (i * step <= number <= (i + 1) * step) {
-                bs_set(bs, number - step * i);
+                size_t bit_to_set = number - step * i;
+                if (bs_is_set(bs, bit_to_set)) {
+                    fprintf(stderr, "Number %u is duplicated.\n", number);
+                    exit_status = EXIT_FAILURE;
+                    goto cleanup;
+                }
+                bs_set(bs, bit_to_set);
             }
         }
 
