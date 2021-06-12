@@ -19,8 +19,8 @@
  * @return The program exit status.
  */
 int main(int argc, char *argv[]) {
+    // Validate the number of command line arguments
     if (argc < 3) {
-        // We need 2 command line arguments
         fprintf(stderr, "Usage: unique_random: [NUMBER] [MAX]\n"
                         "Print [NUMBER] unique random integers between 0 and [MAX] - 1, each in a new line.\n");
         return EXIT_FAILURE;
