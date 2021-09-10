@@ -22,8 +22,8 @@
  * the two elements are equal.
  */
 int compare_u_int32_t(const void *p, const void *q) {
-    u_int32_t x = *(const u_int32_t *) p;
-    u_int32_t y = *(const u_int32_t *) q;
+    u_int32_t x = *(const u_int32_t*) p;
+    u_int32_t y = *(const u_int32_t*) q;
 
     if (x < y) {
         return -1;
