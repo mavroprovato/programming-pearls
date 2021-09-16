@@ -6,33 +6,14 @@
  * This is a solution for problem 1.
  */
 
+#include "compare.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 // The maximum number of elements that the program can handle.
 #define MAX_ELEMENTS 1000000
-
-/**
- * Comparison function for sorting an array of u_int32_t elements.
- *
- * @param p Pointer to the first array element to compare.
- * @param q Pointer to the second array element to compare.
- * @return -1 if the first element is less that the second, 1 if the first element is greater then the second or 0 if
- * the two elements are equal.
- */
-int compare_u_int32_t(const void *p, const void *q) {
-    u_int32_t x = *(const u_int32_t*) p;
-    u_int32_t y = *(const u_int32_t*) q;
-
-    if (x < y) {
-        return -1;
-    } else if (x > y) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
 
 /**
  * The main entry point of the program.
@@ -68,7 +49,7 @@ int main() {
     }
 
     // Cleanup
-    cleanup:
+cleanup:
     free(line);
     exit(exit_status);
 }

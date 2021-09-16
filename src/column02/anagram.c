@@ -3,53 +3,11 @@
  *
  * This is a solution for problem 1.
  */
+#include "stringsig.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-
-/**
- * Comparison function for sorting an array of char elements.
- *
- * @param p Pointer to the first array element to compare.
- * @param q Pointer to the second array element to compare.
- * @return -1 if the first element is less that the second, 1 if the first element is greater then the second or 0 if
- * the two elements are equal.
- */
-int compare_char(const void *p, const void *q) {
-    char x = *(const char*) p;
-    char y = *(const char*) q;
-
-    if (x < y) {
-        return -1;
-    } else if (x > y) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-/**
- * Check if a string has the provided signature. The signature of a string is a string with the characters sorted.
- *
- * @param input The input string to check.
- * @param signature The signature string. It must be sorted.
- * @param signature_len The signature string length.
- * @return True if the signature matches, false otherwise.
- */
-bool signature_matches(char *input, char *signature, size_t signature_len) {
-    size_t input_len = strlen(input);
-    if (input_len != signature_len) {
-        return false;
-    }
-
-    char *input_sorted = strdup(input);
-    qsort(input_sorted, strlen(input_sorted), sizeof(char), compare_char);
-    bool anagram = strcmp(input_sorted, signature) == 0;
-    free(input_sorted);
-
-    return anagram;
-}
 
 /**
  * The main entry point of the program. It takes 2 required command line arguments: The dictionary file and the word we
@@ -74,10 +32,11 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    // Sort & get the length of the input word
-    char *signature = argv[2];
-    qsort(signature, strlen(signature), sizeof(char), compare_char);
-    size_t signature_len = strlen(signature);
+    // Calculate the signature of the input
+    StringSignature input;
+    if (!ss_init(&input, argv[2])) {
+        return EXIT_FAILURE;
+    }
 
     // Read the dictionary
     char *line = NULL;
@@ -87,15 +46,14 @@ int main(int argc, char *argv[]) {
         if (line[strlen(line) - 1] == '\n') {
             line[strlen(line) - 1] = '\0';
         }
-        if (signature_matches(line, signature, signature_len)) {
+        if (ss_matches(line, &input)) {
             puts(line);
         }
     }
 
-    fclose(file);
+    ss_destroy(&input);
     free(line);
+    fclose(file);
 
     return EXIT_SUCCESS;
 }
-
-

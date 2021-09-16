@@ -1,8 +1,6 @@
 /**
  * This library implements a bit set data structure, which is used to compactly store bits. It provides functions to
  * set, unset, toggle and clear all bits in the data structure.
- *
- * Is is a solution for problem 2.
  */
 #include <stdbool.h>
 #include <stdlib.h>
