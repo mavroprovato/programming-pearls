@@ -47,7 +47,7 @@ int compare_entries(const void *p, const void *q) {
 int main(int argc, char *argv[]) {
     // Validate the number of command line arguments
     if (argc < 2) {
-        fprintf(stderr, "Usage: anagram_db: [DICTIONARY] [OUTPUT]\n"
+        fprintf(stderr, "Usage: build_anagram_db: [DICTIONARY] [OUTPUT]\n"
                         "Build an anagram database from the [DICTIONARY] file and write it to the [OUTPUT] file.\n");
         return EXIT_FAILURE;
     }
@@ -55,14 +55,14 @@ int main(int argc, char *argv[]) {
     // Open the input input_file
     FILE *input_file = fopen(argv[1], "r");
     if (input_file == NULL) {
-        fprintf(stderr, "Unable to open input file %s.\n", argv[1]);
+        fprintf(stderr, "Unable to open the dictionary file %s.\n", argv[1]);
         return EXIT_FAILURE;
     }
 
     // Read the dictionary
     char *line = NULL;
     size_t len = 0;
-    size_t current_line = 0;
+    size_t current_entry = 0;
     size_t current_size = CHUNK_SIZE;
     Entry *entries = malloc(current_size * sizeof(Entry));
     while (getline(&line, &len, input_file) != -1) {
@@ -75,11 +75,11 @@ int main(int argc, char *argv[]) {
         StringSignature *signature = malloc(sizeof(StringSignature));
         ss_init(signature, line);
         Entry entry = {.signature = signature, .original = strdup(line)};
-        entries[current_line] = entry;
+        entries[current_entry] = entry;
 
         // Allocate more space if needed
-        current_line++;
-        if (current_line == current_size) {
+        current_entry++;
+        if (current_entry == current_size) {
             current_size += CHUNK_SIZE;
             entries = realloc(entries, current_size * sizeof(Entry));
         }
@@ -87,30 +87,34 @@ int main(int argc, char *argv[]) {
 
     int exit_status = EXIT_SUCCESS;
     FILE *output_file = NULL;
-    if (current_line > 0) {
+    if (current_entry > 0) { // Check if not empty
         // Open the output file
-        output_file = fopen(argv[2], "w");
+        output_file = fopen(argv[2], "wb");
         if (output_file == NULL) {
             exit_status = EXIT_FAILURE;
-            fprintf(stderr, "Unable to open output file %s.\n", argv[1]);
+            fprintf(stderr, "Unable to open the output file %s for writing.\n", argv[1]);
             goto cleanup;
         }
         // Sort the entries by signature
-        qsort(entries, current_line, sizeof (Entry), compare_entries);
+        qsort(entries, current_entry, sizeof (Entry), compare_entries);
         // Group entries with the same signature together
         size_t first_entry = 0;
         size_t last_entry = 0;
-        for (size_t i = 1; i < current_line; i++) {
+        for (size_t i = 1; i < current_entry; i++) {
             if (entries[i].signature->n == entries[first_entry].signature->n &&
                 strcmp(entries[i].signature->signature, entries[first_entry].signature->signature) == 0) {
                 // Same signature
                 last_entry = i;
             } else {
-                // Write the anagrams to the output file
-                fprintf(output_file, "%s%u", entries[first_entry].signature->signature,
-                        (u_int8_t) (last_entry - first_entry + 1));
-                for (size_t j = first_entry; j <= last_entry; j++) {
-                    fprintf(output_file, "%s", entries[j].original);
+                // Different signature. If there are more than one words with the same signature, write them to the
+                // output file, as they are anagrams
+                if (first_entry != last_entry) {
+                    fputc((char) entries[first_entry].signature->n, output_file);
+                    fprintf(output_file, "%s", entries[first_entry].signature->signature);
+                    fputc((char) (last_entry - first_entry + 1), output_file);
+                    for (size_t j = first_entry; j <= last_entry; j++) {
+                        fprintf(output_file, "%s", entries[j].original);
+                    }
                 }
                 first_entry = i;
                 last_entry = i;
@@ -125,7 +129,7 @@ cleanup:
         fclose(output_file);
     }
     free(line);
-    for (size_t i = 0; i < current_line; i++) {
+    for (size_t i = 0; i < current_entry; i++) {
         ss_destroy(entries[i].signature);
         free(entries[i].signature);
         free(entries[i].original);
