@@ -10,31 +10,53 @@
 
 #include "stringsig.h"
 
-// The number of entries by which the database will be extended, if there is no space left
-#define CHUNK_SIZE 1000
-
 /**
- * Structure for the database entry.
+ * Structure that holds a word along with its signature
  */
 typedef struct {
-    StringSignature *signature;
+    /** The original word */
     char *original;
-} Entry;
+    /** The word signature */
+    char *signature;
+    /** The length of the word */
+    size_t length;
+} SignaturePair;
 
 /**
- * Compares two database entries. The entries are compared based on the dictionary word's signature.
+ * Comparison function for sorting an array of string signature elements.
  *
- * @param p The first database entry to compare.
- * @param q The second database entry to compare.
+ * @param p Pointer to the first array element to compare.
+ * @param q Pointer to the second array element to compare.
  * @return -1 if the first element is less that the second, 1 if the first element is greater then the second or 0 if
  * the two elements are equal.
  */
-int compare_entries(const void *p, const void *q) {
-    Entry *ep = (Entry *) p;
-    Entry *eq = (Entry *) q;
+int compare_signature_pairs(const void *p, const void *q) {
+    SignaturePair x = *(const SignaturePair*) p;
+    SignaturePair y = *(const SignaturePair*) q;
+    size_t max_length = (x.length < y.length) ? y.length : x.length;
 
-    return strcmp(ep->signature->signature, eq->signature->signature);
+    return strncmp(x.signature, y.signature, max_length);
 }
+
+/**
+ * Write an anagram db entry to the output file.
+ *
+ * @param file The output file.
+ * @param pairs The signature pairs.
+ * @param first_entry The index of the first signature pair to write.
+ * @param last_entry The index of the last signature pair to write.
+ */
+void write_db_entry(FILE *file, const SignaturePair *pairs, size_t first_entry, size_t last_entry) {
+    fputc((char) pairs[first_entry].length, file);
+    fputs(pairs[first_entry].signature, file);
+    fputc((char) (last_entry - first_entry + 1), file);
+    for (size_t j = first_entry; j <= last_entry; j++) {
+        fputs(pairs[j].original, file);
+    }
+}
+
+// The number of entries by which the database will be extended, if there is no space left
+#define CHUNK_SIZE 1000
 
 /**
  * The main entry point of the program. It takes 2 required command line arguments: The dictionary file and the output
@@ -61,33 +83,39 @@ int main(int argc, char *argv[]) {
 
     // Read the dictionary
     char *line = NULL;
-    size_t len = 0;
-    size_t current_entry = 0;
-    size_t current_size = CHUNK_SIZE;
-    Entry *entries = malloc(current_size * sizeof(Entry));
-    while (getline(&line, &len, input_file) != -1) {
+    size_t n = 0;
+    ssize_t line_length;
+    SignaturePair *pairs = malloc(CHUNK_SIZE * sizeof (SignaturePair));
+    size_t word_count = 0;
+    size_t capacity = CHUNK_SIZE;
+    while ((line_length = getline(&line, &n, input_file)) != -1) {
         // Strip new line if it exists
-        if (line[strlen(line) - 1] == '\n') {
-            line[strlen(line) - 1] = '\0';
+        if (line[line_length - 1] == '\n') {
+            line[line_length - 1] = '\0';
+            line_length--;
         }
 
-        // Create the entry
-        StringSignature *signature = malloc(sizeof(StringSignature));
-        ss_init(signature, line);
-        Entry entry = {.signature = signature, .original = strdup(line)};
-        entries[current_entry] = entry;
+        // Crate the signature pair
+        char *original = strndup(line, line_length);
+        char *signature = malloc((line_length + 1) * sizeof (char));
+        ss_calculate(original, line_length, signature);
+        SignaturePair pair = {.signature = signature, .original = original, .length = line_length};
+        pairs[word_count++] = pair;
 
-        // Allocate more space if needed
-        current_entry++;
-        if (current_entry == current_size) {
-            current_size += CHUNK_SIZE;
-            entries = realloc(entries, current_size * sizeof(Entry));
+        // Extend the capacity if needed
+        if (word_count == capacity) {
+            capacity += CHUNK_SIZE;
+            pairs = realloc(pairs, capacity * sizeof(SignaturePair));
         }
     }
 
+    // Sort the signature pairs
+    qsort(pairs, word_count, sizeof (SignaturePair), compare_signature_pairs);
+
+    // Build the database
     int exit_status = EXIT_SUCCESS;
     FILE *output_file = NULL;
-    if (current_entry > 0) { // Check if not empty
+    if (word_count > 0) { // Check if not empty
         // Open the output file
         output_file = fopen(argv[2], "wb");
         if (output_file == NULL) {
@@ -95,46 +123,42 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Unable to open the output file %s for writing.\n", argv[1]);
             goto cleanup;
         }
-        // Sort the entries by signature
-        qsort(entries, current_entry, sizeof (Entry), compare_entries);
+
         // Group entries with the same signature together
         size_t first_entry = 0;
         size_t last_entry = 0;
-        for (size_t i = 1; i < current_entry; i++) {
-            if (entries[i].signature->n == entries[first_entry].signature->n &&
-                strcmp(entries[i].signature->signature, entries[first_entry].signature->signature) == 0) {
-                // Same signature
+        for (size_t i = 1; i < word_count; i++) {
+            if (pairs[i].length == pairs[first_entry].length &&
+                strncmp(pairs[i].signature, pairs[first_entry].signature, pairs[first_entry].length) == 0) {
+                // The signature is the same, continue with the next entry
                 last_entry = i;
             } else {
                 // Different signature. If there are more than one words with the same signature, write them to the
                 // output file, as they are anagrams
                 if (first_entry != last_entry) {
-                    fputc((char) entries[first_entry].signature->n, output_file);
-                    fprintf(output_file, "%s", entries[first_entry].signature->signature);
-                    fputc((char) (last_entry - first_entry + 1), output_file);
-                    for (size_t j = first_entry; j <= last_entry; j++) {
-                        fprintf(output_file, "%s", entries[j].original);
-                    }
+                    write_db_entry(output_file, pairs, first_entry, last_entry);
                 }
                 first_entry = i;
                 last_entry = i;
             }
         }
+        if (first_entry != last_entry) {
+            write_db_entry(output_file, pairs, first_entry, last_entry);
+        }
     }
 
     // Cleanup
 cleanup:
-    fclose(input_file);
     if (output_file != NULL) {
         fclose(output_file);
     }
-    free(line);
-    for (size_t i = 0; i < current_entry; i++) {
-        ss_destroy(entries[i].signature);
-        free(entries[i].signature);
-        free(entries[i].original);
+    for (size_t i = 0; i < word_count; i++) {
+        free(pairs[i].original);
+        free(pairs[i].signature);
     }
-    free(entries);
+    free(pairs);
+    free(line);
+    fclose(input_file);
 
     return exit_status;
 }

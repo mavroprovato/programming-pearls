@@ -6,7 +6,7 @@ set (CMAKE_C_STANDARD 11)
 include_directories (include)
 
 # Create the library of common functions
-add_library (pplib src/common/compare.c src/common/bitset.c src/common/stringsig.c)
+add_library (pplib src/common/compare.c src/column01/bitset.c src/column02/stringsig.c)
 
 # Column 1 executables
 add_executable (library_sort src/column01/library_sort.c)

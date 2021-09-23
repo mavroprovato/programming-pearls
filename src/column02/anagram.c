@@ -33,25 +33,31 @@ int main(int argc, char *argv[]) {
     }
 
     // Calculate the signature of the input
-    StringSignature input;
-    if (!ss_init(&input, argv[2])) {
-        return EXIT_FAILURE;
-    }
-
+    size_t signature_length = strlen(argv[2]);
+    char signature[signature_length + 1];
+    ss_calculate(argv[2], signature_length, signature);
+    // Buffer to hold the target signature
+    char target_signature[signature_length + 1];
     // Read the dictionary
     char *line = NULL;
-    size_t len = 0;
-    while (getline(&line, &len, file) != -1) {
+    size_t n = 0;
+    ssize_t line_length;
+    while ((line_length = getline(&line, &n, file)) != -1) {
         // Strip new line if it exists
-        if (line[strlen(line) - 1] == '\n') {
-            line[strlen(line) - 1] = '\0';
+        if (line[line_length - 1] == '\n') {
+            line[line_length - 1] = '\0';
+            line_length--;
         }
-        if (ss_matches(line, &input)) {
-            puts(line);
+        // Check if signatures match
+        if (signature_length == line_length) {
+            ss_calculate(line, line_length, target_signature);
+            if (strncmp(signature, target_signature, signature_length) == 0 &&
+                strncmp(argv[2], line, signature_length) != 0) {
+                puts(line);
+            }
         }
     }
 
-    ss_destroy(&input);
     free(line);
     fclose(file);
 

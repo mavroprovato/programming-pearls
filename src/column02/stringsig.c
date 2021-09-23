@@ -1,7 +1,8 @@
-#ifndef STRINGSIG_H
-#define STRINGSIG_H
+#include <stdlib.h>
+#include <string.h>
 
-#include <stddef.h>
+#include "compare.h"
+#include "stringsig.h"
 
 /**
  * Calculate the signature for a string.
@@ -11,6 +12,8 @@
  * @param signature Pointer to where the signature will be written to. The caller is responsible to allocate length + 1
  * characters for the string.
  */
-void ss_calculate(const char *string, size_t length, char *signature);
-
-#endif // STRINGSIG_H
+void ss_calculate(const char *string, size_t length, char *signature) {
+    strncpy(signature, string , length);
+    signature[length] = '\0';
+    qsort(signature, length, sizeof(char), compare_char);
+}
