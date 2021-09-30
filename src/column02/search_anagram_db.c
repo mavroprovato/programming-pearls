@@ -78,7 +78,7 @@ int compare_entries(const void *p, const void *q) {
  */
 int main(int argc, char *argv[]) {
     // Validate the number of command line arguments
-    if (argc < 2) {
+    if (argc < 3) {
         fprintf(stderr, "Usage: search_anagram_db: [ANAGRAM_DB] [WORD]\n"
                         "Search the anagram database file [ANAGRAM_DB] for anagrams of [WORD], and print them to the "
                         "standard output.\n");

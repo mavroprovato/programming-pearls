@@ -68,7 +68,7 @@ void write_db_entry(FILE *file, const SignaturePair *pairs, size_t first_entry, 
  */
 int main(int argc, char *argv[]) {
     // Validate the number of command line arguments
-    if (argc < 2) {
+    if (argc < 3) {
         fprintf(stderr, "Usage: build_anagram_db: [DICTIONARY] [OUTPUT]\n"
                         "Build an anagram database from the [DICTIONARY] file and write it to the [OUTPUT] file.\n");
         return EXIT_FAILURE;
