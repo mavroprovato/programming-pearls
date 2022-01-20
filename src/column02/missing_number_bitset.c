@@ -1,5 +1,5 @@
 /**
- * This programs finds a missing number from an input file that contains at most 2^N - 1 N-bit unsigned integers in
+ * This program finds a missing number from an input file that contains at most 2^N - 1 N-bit unsigned integers in
  * random order. N is defined in compile time and should be either 8, 16, 32 or 64. The solution uses a bitset, so it
  * should only be used if there is ample amount of memory.
  *
