@@ -6,7 +6,7 @@
  * The input file is split into two files: One that contains the numbers with the 1st bit set and one with the ones that
  * have it unset. If one of them is empty, then the missing number has its 1st bit set or unset respectively, so the
  * search stops. If both of them are not empty, we use the smaller one to count the numbers with the 2nd bit set or
- * unset and so on. Eventually we will find an empty file, an the input numbers are less that the search set.
+ * unset and so on. Eventually we will find an empty file, as the input numbers are less that the search set.
  *
  * This is a solution for problem A.
  */
