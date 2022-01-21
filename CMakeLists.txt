@@ -18,6 +18,7 @@ add_executable (unique_random src/column01/unique_random.c)
 # Column 2 executables
 add_executable (missing_number_bitset src/column02/missing_number_bitset.c)
 target_link_libraries (missing_number_bitset LINK_PUBLIC pplib)
+add_executable (missing_number_file src/column02/missing_number_file.c)
 add_executable (anagram src/column02/anagram.c)
 target_link_libraries (anagram LINK_PUBLIC pplib)
 add_executable (build_anagram_db src/column02/build_anagram_db.c)
